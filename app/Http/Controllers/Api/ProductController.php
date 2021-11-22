@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Product;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\ProductCollection;
+use App\Http\Resources\ProductResource;
+use App\User;
 
 class ProductController extends Controller
 {
@@ -24,11 +27,30 @@ class ProductController extends Controller
     /**
      * Método de listagem de produtos.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $products = $this->product->all();
+        $products = $this->product;
 
-        return response()->json($products);
+        if($request->has('condition')) {
+            $expressions = explode(';', $request->get('condition'));
+        
+            foreach ($expressions as $e) {
+                $exp = explode('=', $e);
+                $products = $products->where($exp[0], $exp[1]);
+            }
+        }
+
+
+        if($request->has('fields')) {
+            $fields = $request->get('fields');
+            $products = $products->selectRaw($fields);
+
+            return new ProductCollection($products->paginate(10));
+            // return response()->json($fields);
+        }
+
+        // return response()->json($products);
+        return new ProductCollection($products);
     }
 
     /**
@@ -38,7 +60,8 @@ class ProductController extends Controller
     {
         $product = $this->product->find($id);
 
-        return response()->json($product);
+        // return response()->json($product);
+        return new ProductResource($product);
     }
 
     /**
@@ -73,6 +96,6 @@ class ProductController extends Controller
         $product = $this->product->find($id);
         $product->delete();
 
-        return response()->json(['data' => ['msg' => 'Produto deletado com sucesso']]);ts
+        return response()->json(['data' => ['msg' => 'Produto deletado com sucesso']]);
     }
 }
