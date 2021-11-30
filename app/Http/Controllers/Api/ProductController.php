@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
+use App\Repository\ProductRepository;
 use App\User;
 
 class ProductController extends Controller
@@ -29,28 +30,27 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
+        // url de teste: http://localhost:8000/api/products?fields=name,price&condition=name:like:%o
         $products = $this->product;
+        $productsRepository = new ProductRepository($products);
 
         if($request->has('condition')) {
-            $expressions = explode(';', $request->get('condition'));
-        
-            foreach ($expressions as $e) {
-                $exp = explode('=', $e);
-                $products = $products->where($exp[0], $exp[1]);
-            }
+            $productsRepository->selectCondition($request->get('condition'));
         }
 
-
-        if($request->has('fields')) {
-            $fields = $request->get('fields');
-            $products = $products->selectRaw($fields);
-
-            return new ProductCollection($products->paginate(10));
-            // return response()->json($fields);
-        }
-
+        // if($request->has('fields')) {
+        //     $fields = $request->get('fields');
+        //     $products = $products->selectRaw($fields);
+        //     return new ProductCollection($products->paginate(10));
+        //     // return response()->json($fields);
+        // }
         // return response()->json($products);
-        return new ProductCollection($products);
+
+        if ($request->has('fields')) {
+            $productsRepository->selectFilter($request->get('fields'));
+        }
+
+        return new ProductCollection($productsRepository->getResult()->paginate(10));
     }
 
     /**
