@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Product;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ProductRequest;
 use App\Http\Resources\ProductCollection;
 use App\Http\Resources\ProductResource;
 use App\Repository\ProductRepository;
-use App\User;
 
 class ProductController extends Controller
 {
@@ -67,7 +67,7 @@ class ProductController extends Controller
     /**
      * Método para salvar o produto.
      */
-    public function save(Request $request)
+    public function save(ProductRequest $request)
     {
         $data = $request->all();
         $product = $this->product->create($data);
@@ -77,9 +77,9 @@ class ProductController extends Controller
     }
 
      /**
-     * Método para salvar o produto.
-     */
-    public function update(Request $request)
+      * Método para salvar o produto.
+      */
+    public function update(ProductRequest $request)
     {
         $data = $request->all();
         $product = $this->product->find($data['id']);
@@ -89,8 +89,8 @@ class ProductController extends Controller
     }
 
      /**
-     * Método para excluir o produto.
-     */
+      * Método para excluir o produto.
+      */
     public function delete($id)
     {
         $product = $this->product->find($id);
